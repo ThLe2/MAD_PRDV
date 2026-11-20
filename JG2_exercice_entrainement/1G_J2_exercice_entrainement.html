@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exercice d'entraînement — Gestion des appels sortants en assurance · Jour 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Karla:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#16243B; --blue:#1F4E79; --blue-l:#2E75B6; --gold:#B08D57;
+    --cream:#F5F2EB; --rule:#e3ddd0; --green:#2F7A4F; --red:#B23B3B; --amber:#B5852A;
+    --ink:#2b3444; --muted:#6b7280;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--cream);color:var(--ink);font-family:'Karla',system-ui,sans-serif;line-height:1.55;}
+  .wrap{max-width:940px;margin:0 auto;padding:28px 20px 70px;}
+  header.top{background:var(--navy);color:#fff;border-radius:10px;padding:26px 28px;position:relative;overflow:hidden;}
+  header.top:after{content:"";position:absolute;inset:auto 0 0 0;height:3px;background:var(--gold);}
+  .tag{font-size:.76rem;letter-spacing:.13em;text-transform:uppercase;color:#d6c9ae;font-weight:700;margin:0 0 10px;}
+  .tag span{color:var(--gold);}
+  header.top h1{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:1.72rem;margin:0 0 6px;line-height:1.25;}
+  header.top p{margin:0;color:#c9d3e2;font-size:.98rem;}
+  .consigne{background:#fff;border:1px solid var(--rule);border-left:4px solid var(--gold);border-radius:8px;padding:16px 18px;margin:22px 0 6px;font-size:.96rem;}
+  .consigne b{color:var(--navy);}
+  .atelier{background:#fff;border:1px solid var(--rule);border-radius:10px;padding:22px 24px;margin:22px 0;}
+  .atelier > h2{font-family:'Fraunces',Georgia,serif;font-size:1.22rem;color:var(--navy);margin:0 0 4px;font-weight:600;}
+  .atelier > .sub{color:var(--muted);font-size:.9rem;margin:0 0 18px;}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--blue);color:#fff;font-size:.82rem;font-weight:700;margin-right:9px;vertical-align:2px;}
+  .item{border-top:1px solid var(--rule);padding:15px 0 13px;}
+  .item:first-of-type{border-top:none;}
+  .q{font-weight:600;color:var(--navy);margin:0 0 9px;font-size:.99rem;}
+  .q .cite{font-weight:400;font-style:italic;color:var(--ink);}
+  select{width:100%;padding:10px 12px;border:1px solid #c9c2b3;border-radius:7px;background:#fdfcf9;font-family:inherit;font-size:.94rem;color:var(--ink);}
+  select:focus{outline:2px solid var(--blue-l);outline-offset:1px;}
+  select.ok{border-color:var(--green);background:#f0f7f2;}
+  select.ko{border-color:var(--red);background:#fbf1f1;}
+  .fb{margin-top:9px;font-size:.9rem;padding:10px 12px;border-radius:7px;display:none;}
+  .fb.ok{display:block;background:#f0f7f2;border:1px solid #cfe4d7;color:#1f5537;}
+  .fb.ko{display:block;background:#fbf1f1;border:1px solid #edd2d2;color:#8d2f2f;}
+  .steps{list-style:none;margin:0;padding:0;}
+  .steps li{display:flex;align-items:center;gap:12px;background:#fdfcf9;border:1px solid var(--rule);border-radius:8px;padding:10px 12px;margin-bottom:8px;}
+  .steps li.ok{border-color:var(--green);background:#f0f7f2;}
+  .steps li.ko{border-color:var(--red);background:#fbf1f1;}
+  .steps .rank{flex:0 0 26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;}
+  .steps .lbl{flex:1;font-size:.95rem;}
+  .mv{background:#fff;border:1px solid #c9c2b3;border-radius:6px;width:30px;height:28px;cursor:pointer;color:var(--navy);font-size:.9rem;line-height:1;}
+  .mv:hover{background:var(--cream);}
+  .mv:disabled{opacity:.3;cursor:default;}
+  .actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:18px;}
+  button.main{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:11px 22px;font-family:inherit;font-size:.95rem;font-weight:700;cursor:pointer;}
+  button.main:hover{background:var(--navy);}
+  button.ghost{background:#fff;color:var(--blue);border:1px solid var(--blue);border-radius:8px;padding:11px 20px;font-family:inherit;font-size:.95rem;font-weight:600;cursor:pointer;}
+  button.ghost:hover{background:#eef3f9;}
+  .score{font-weight:700;color:var(--navy);font-size:.95rem;}
+  .bilan{background:var(--navy);color:#fff;border-radius:10px;padding:22px 24px;margin-top:26px;display:none;}
+  .bilan.show{display:block;}
+  .bilan h2{font-family:'Fraunces',Georgia,serif;margin:0 0 8px;font-size:1.3rem;font-weight:600;}
+  .bilan p{margin:0 0 6px;color:#d8e0ec;font-size:.96rem;}
+  .bilan .big{font-size:2.1rem;font-weight:700;color:var(--gold);font-family:'Fraunces',Georgia,serif;}
+  footer.bot{text-align:center;color:var(--muted);font-size:.82rem;margin-top:34px;padding-top:16px;border-top:1px solid var(--rule);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <p class="tag">TMK Performances — Gestion des appels sortants en assurance <span>/</span> Jour 2</p>
+    <h1>Exercice d'entraînement</h1>
+    <p>Trois ateliers sur la prise de rendez-vous par téléphone</p>
+  </header>
+
+  <div class="consigne">
+    <b>Comment procéder :</b> réalisez les trois ateliers dans l'ordre, puis cliquez sur
+    <b>« Vérifier mes réponses »</b> en bas de chaque atelier. Cet exercice n'est pas noté et ne donne lieu
+    à aucune attestation : il sert uniquement à vous entraîner. Vous pouvez le recommencer autant de fois que vous le souhaitez.
+  </div>
+
+  <!-- ================= ATELIER 1 ================= -->
+  <section class="atelier" id="a1">
+    <h2><span class="num">1</span>Choisir la bonne question de découverte</h2>
+    <p class="sub">Pour chaque intention du conseiller, choisissez la question la mieux adaptée.</p>
+    <div class="list"></div>
+    <div class="actions">
+      <button class="main" data-check="1">Vérifier mes réponses</button>
+      <span class="score" data-score="1"></span>
+    </div>
+  </section>
+
+  <!-- ================= ATELIER 2 ================= -->
+  <section class="atelier" id="a2">
+    <h2><span class="num">2</span>Répondre à une objection de prise de rendez-vous</h2>
+    <p class="sub">Pour chaque objection entendue, choisissez la réponse conforme à la méthode en quatre temps.</p>
+    <div class="list"></div>
+    <div class="actions">
+      <button class="main" data-check="2">Vérifier mes réponses</button>
+      <span class="score" data-score="2"></span>
+    </div>
+  </section>
+
+  <!-- ================= ATELIER 3 ================= -->
+  <section class="atelier" id="a3">
+    <h2><span class="num">3</span>Remettre dans l'ordre les étapes de la prise de rendez-vous</h2>
+    <p class="sub">Utilisez les flèches pour ordonner les sept étapes, de la première à la dernière.</p>
+    <ul class="steps" id="stepList"></ul>
+    <div class="actions">
+      <button class="main" data-check="3">Vérifier mon classement</button>
+      <span class="score" data-score="3"></span>
+    </div>
+  </section>
+
+  <div class="bilan" id="bilan">
+    <h2>Bilan de l'entraînement</h2>
+    <p class="big" id="bilanScore"></p>
+    <p id="bilanMsg"></p>
+  </div>
+
+  <div class="actions" style="justify-content:center;margin-top:22px">
+    <button class="ghost" id="reset">Recommencer l'exercice</button>
+  </div>
+
+  <footer class="bot">TMK Performances · Module 1G — Gestion des appels sortants en assurance · Jour 2</footer>
+</div>
+
+<script>
+const A1 = [
+  { cite:"Ouvrir la découverte sur les déplacements du client",
+    opts:["Comment vous déplacez-vous au quotidien ?","Vous avez toujours la même voiture ?","Vous roulez beaucoup, non ?"],
+    ok:0, fb:"Une découverte s'ouvre par une question ouverte : elle fait parler et livre bien plus qu'un oui ou un non." },
+  { cite:"Faire préciser un point factuel sur le logement",
+    opts:["Parlez-moi de votre logement.","Vous êtes propriétaire ou locataire ?","Votre logement vous convient-il ?"],
+    ok:1, fb:"La question fermée sert à vérifier un élément factuel, une fois la découverte lancée — jamais à l'ouvrir." },
+  { cite:"Faire émerger la motivation dominante du client",
+    opts:["Vous cherchez le meilleur prix ?","Qu'est-ce qui vous paraît le plus important à protéger ?","Vous êtes plutôt prudent ou vous prenez des risques ?"],
+    ok:1, fb:"La motivation se détecte dans les mots du client : une question ouverte sur ce qui compte pour lui la fait apparaître." },
+  { cite:"Obtenir une date de rendez-vous",
+    opts:["Quand seriez-vous disponible ?","Vous préférez jeudi 14 ou vendredi 15 ?","Est-ce que vous voudriez qu'on se voie ?"],
+    ok:1, fb:"L'alternative fait porter le choix sur le quand, et non sur le si. « Quand seriez-vous disponible ? » rend la main au client." },
+  { cite:"Explorer ce qui a changé depuis la souscription",
+    opts:["Il y a eu du changement depuis 2019 ?","Qu'est-ce qui a évolué chez vous depuis 2019 ?","Votre situation est toujours la même ?"],
+    ok:1, fb:"La formulation ouverte oblige à raconter ; les deux autres appellent un oui ou un non qui ferme la découverte." },
+];
+
+const A2 = [
+  { cite:"Je n'ai vraiment pas le temps en ce moment.",
+    opts:["Je comprends. C'est justement pour vous en faire gagner : 45 minutes une fois, plutôt que des démarches à chaque incident. Jeudi ou vendredi ?","Ça ne prendra que quelques minutes, je vous assure.","Je rappellerai un autre jour alors."],
+    ok:0, fb:"Accueillir sans « mais », répondre par le bénéfice en temps gagné, puis reproposer en alternative : c'est la reproposition qui manque le plus souvent." },
+  { cite:"Envoyez-moi plutôt une documentation.",
+    opts:["Bien sûr, je vous envoie cela tout de suite.","Je peux vous l'envoyer, mais elle ne dira rien de votre situation : c'est ce point-là que je vous propose de regarder ensemble. Jeudi ou vendredi ?","Nos documentations ne sont malheureusement pas très détaillées."],
+    ok:1, fb:"La demande de documentation est le plus souvent une façon polie de clore l'appel : on la traite en ramenant au cas particulier du client." },
+  { cite:"Je suis déjà assuré ailleurs.",
+    opts:["Vous verrez, nous sommes bien moins chers.","C'est bien pour cela que je vous appelle : l'idée n'est pas de tout changer, mais de vérifier ce qui se recoupe et ce qui manque.","Et vous êtes satisfait de votre assureur actuel ?"],
+    ok:1, fb:"On ne critique jamais le confrère et on ne compare pas les tarifs à ce stade : on déplace le sujet vers les doublons et les trous de garantie." },
+  { cite:"Rappelez-moi plus tard.",
+    opts:["Volontiers. Plutôt la semaine prochaine en début ou en fin de semaine ?","D'accord, je vous rappellerai.","Quand voulez-vous que je vous rappelle ?"],
+    ok:0, fb:"On accepte, mais on ne quitte jamais l'appel sans une date : sans alternative proposée, le rappel n'aura pas lieu." },
+  { cite:"Franchement, c'est trop cher.",
+    opts:["Nos tarifs sont pourtant très compétitifs.","Nous n'avons pas encore parlé de tarif : c'est justement ce que le rendez-vous permet de chiffrer sur votre situation.","Je peux voir avec mon responsable si une remise est possible."],
+    ok:1, fb:"Défendre un prix qui n'a pas été annoncé revient à valider l'idée que c'est cher. On ramène le tarif à ce qu'il est : un chiffrage à faire en rendez-vous." },
+];
+
+const A3_ORDER = [
+  "L'accroche en quatre temps",
+  "La découverte express",
+  "La reformulation-bilan",
+  "La phrase de transition",
+  "La proposition en alternative",
+  "Le verrouillage des six éléments",
+  "La confirmation écrite",
+];
+
+const state = { done:{1:false,2:false,3:false}, sc:{1:0,2:0,3:0}, tot:{1:A1.length,2:A2.length,3:A3_ORDER.length} };
+
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+function renderSelects(sectionId, data){
+  const box = document.querySelector("#"+sectionId+" .list");
+  box.innerHTML = "";
+  data.forEach((d,i)=>{
+    const idx = d.opts.map((_,k)=>k);
+    const order = shuffle(idx);
+    d._map = order;
+    const div = document.createElement("div");
+    div.className = "item";
+    div.innerHTML =
+      '<p class="q">'+(i+1)+'. <span class="cite">« '+d.cite+' »</span></p>' +
+      '<select data-i="'+i+'"><option value="-1">— Choisissez la bonne réponse —</option>' +
+      order.map((o,pos)=>'<option value="'+o+'">'+d.opts[o]+'</option>').join("") +
+      '</select><div class="fb"></div>';
+    box.appendChild(div);
+  });
+}
+
+function renderSteps(){
+  const ul = document.getElementById("stepList");
+  ul.innerHTML = "";
+  let order = shuffle(A3_ORDER);
+  while(order.every((v,i)=>v===A3_ORDER[i])) order = shuffle(A3_ORDER);
+  order.forEach(lbl=>{
+    const li = document.createElement("li");
+    li.innerHTML = '<span class="rank"></span><span class="lbl">'+lbl+'</span>' +
+      '<button class="mv up" title="Monter">&#9650;</button><button class="mv down" title="Descendre">&#9660;</button>';
+    ul.appendChild(li);
+  });
+  refreshRanks();
+}
+
+function refreshRanks(){
+  const items = [...document.querySelectorAll("#stepList li")];
+  items.forEach((li,i)=>{
+    li.querySelector(".rank").textContent = i+1;
+    li.querySelector(".up").disabled = (i===0);
+    li.querySelector(".down").disabled = (i===items.length-1);
+  });
+}
+
+document.getElementById("stepList").addEventListener("click", e=>{
+  const b = e.target.closest(".mv"); if(!b) return;
+  const li = b.closest("li"), ul = li.parentNode;
+  if(b.classList.contains("up") && li.previousElementSibling) ul.insertBefore(li, li.previousElementSibling);
+  if(b.classList.contains("down") && li.nextElementSibling) ul.insertBefore(li.nextElementSibling, li);
+  refreshRanks();
+});
+
+function checkSelects(n, sectionId, data){
+  let ok = 0, allAnswered = true;
+  document.querySelectorAll("#"+sectionId+" select").forEach(sel=>{
+    const i = +sel.dataset.i, v = +sel.value, d = data[i];
+    const fb = sel.parentNode.querySelector(".fb");
+    if(v === -1){ allAnswered = false; }
+    sel.classList.remove("ok","ko"); fb.className = "fb";
+    if(v === d.ok){ ok++; sel.classList.add("ok"); fb.classList.add("ok"); fb.textContent = "Bonne réponse. " + d.fb; }
+    else if(v !== -1){ sel.classList.add("ko"); fb.classList.add("ko"); fb.textContent = "Réponse attendue : « " + d.opts[d.ok] + " ». " + d.fb; }
+  });
+  if(!allAnswered){ alert("Complétez toutes les lignes de l'atelier avant de vérifier."); return; }
+  state.sc[n] = ok; state.done[n] = true;
+  document.querySelector('[data-score="'+n+'"]').textContent = ok + " / " + data.length + " bonnes réponses";
+  bilan();
+}
+
+function checkSteps(){
+  const items = [...document.querySelectorAll("#stepList li")];
+  let ok = 0;
+  items.forEach((li,i)=>{
+    const good = li.querySelector(".lbl").textContent === A3_ORDER[i];
+    li.classList.remove("ok","ko"); li.classList.add(good ? "ok" : "ko");
+    if(good) ok++;
+  });
+  state.sc[3] = ok; state.done[3] = true;
+  document.querySelector('[data-score="3"]').textContent = ok + " / " + A3_ORDER.length + " étapes bien placées";
+  bilan();
+}
+
+function bilan(){
+  if(!(state.done[1] && state.done[2] && state.done[3])) return;
+  const s = state.sc[1]+state.sc[2]+state.sc[3];
+  const t = state.tot[1]+state.tot[2]+state.tot[3];
+  const pct = Math.round(s/t*100);
+  document.getElementById("bilanScore").textContent = s + " / " + t + "  ·  " + pct + " %";
+  let msg;
+  if(pct >= 85) msg = "Les notions de la journée sont bien installées. Vous pouvez enchaîner sur le QCM de validation.";
+  else if(pct >= 60) msg = "L'essentiel est acquis. Relisez les corrections affichées ci-dessus, puis passez au QCM de validation.";
+  else msg = "Reprenez les corrections affichées ci-dessus et refaites l'exercice : il n'est pas noté, autant s'en servir pour s'entraîner.";
+  document.getElementById("bilanMsg").textContent = msg;
+  document.getElementById("bilan").classList.add("show");
+  document.getElementById("bilan").scrollIntoView({behavior:"smooth", block:"nearest"});
+}
+
+document.querySelectorAll("[data-check]").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    const n = +b.dataset.check;
+    if(n === 1) checkSelects(1, "a1", A1);
+    if(n === 2) checkSelects(2, "a2", A2);
+    if(n === 3) checkSteps();
+  });
+});
+
+function init(){
+  renderSelects("a1", A1);
+  renderSelects("a2", A2);
+  renderSteps();
+  state.done = {1:false,2:false,3:false}; state.sc = {1:0,2:0,3:0};
+  document.querySelectorAll(".score").forEach(s=>s.textContent="");
+  document.getElementById("bilan").classList.remove("show");
+}
+document.getElementById("reset").addEventListener("click", ()=>{ init(); window.scrollTo({top:0,behavior:"smooth"}); });
+init();
+</script>
+</body>
+</html>
